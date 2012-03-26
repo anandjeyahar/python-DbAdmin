@@ -18,15 +18,16 @@ class DbAdministrator(object):
 			self.conn = conn
 		self.cursor = self.conn.cursor()
 
-        def lock_table(self,table,lock_type):
-            return self.cursor.execute("LOCK TABLES %S %S"%(table,lock_type))
+    def lock_table(self,table,lock_type):
+        return self.cursor.execute("LOCK TABLES %S %S"%(table,lock_type))
 
-        def unlock_tables(self):
-            """
-            Just stupid unlock tables
-            """
-            return self.cursor.execute("UNLOCK TABLES;")
-	def get_variables(self,regex):
+    def unlock_tables(self):
+    """
+        Just stupid unlock tables
+    """
+        return self.cursor.execute("UNLOCK TABLES;")
+
+    def get_variables(self,regex):
 		"""
         Get variables that match the passed pattern regex
         """
