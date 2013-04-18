@@ -2,7 +2,7 @@
 ## http://code.google.com/p/wnframework/
 ##
 ##
-import MySQLdb
+
 class DbAdministrator(object):
     """
             Basically, a wrapper for oft-used mysql commands. like show tables,databases, variables etc...
@@ -13,18 +13,33 @@ class DbAdministrator(object):
             2. Setter and getter for mysql variables at global level??
     """
 
-    def __init__(self,conn):
+    def __init__(self,conn=None):
         if conn:
             self.conn = conn
+        else:
+            self.conn = self.get_conn()
         self.cursor = self.conn.cursor()
+
+    def get_conn(self):
+        db_host = raw_input("DB Hostname/IP?")
+        db_type = raw_input("DB type(mysql/postgres)?")
+        db_root_user = raw_input("DB root user?")
+        db_password = raw_input("DB password?")
+        self.db_type = db_type
+        if db_type == 'mysql':
+            import MySQLdb as mq
+            return mq.Connect(host=db_host,user=db_root_user,password=db_password)
+        elif db_type == 'postgres':
+            import psycopg2 as pg
+            return pg.connect("host = %s port = 5432 user=%s password=%s"%(db_host,db_root_user,db_password))
+
+        return None
 
     def lock_table(self,table,lock_type):
         return self.cursor.execute("LOCK TABLES %S %S"%(table,lock_type))
 
     def unlock_tables(self):
-    """
-        Just stupid unlock tables
-    """
+        """Just stupid unlock tables"""
         return self.cursor.execute("UNLOCK TABLES;")
 
     def get_variables(self,regex):
@@ -69,10 +84,16 @@ class DbAdministrator(object):
         #Create user if it doesn't exist.
         try:
             print "Creating user %s" %user[:16]
-            if password:
-                self.cursor.execute("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (user[:16], password))
-            else:
-                self.cursor.execute("CREATE USER '%s'@'localhost';"%user[:16])
+            if self.db_type == 'mysql':
+                if password:
+                    self.cursor.execute("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (user[:16], password))
+                else:
+                    self.cursor.execute("CREATE USER '%s'@'localhost';"%user[:16])
+            elif self.db_type == 'postgres':
+                if password:
+                    self.cursor.execute("CREATE USER %s@localhost WITH PASSWORD '%s';" % (user[:16], password))
+                else:
+                    self.cursor.execute("CREATE USER %s@localhost;"%user[:16])
         except Exception, e:
             raise e
 
