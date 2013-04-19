@@ -93,7 +93,7 @@ class DbAdministrator(object):
                 if password:
                     self.cursor.execute("CREATE USER %s@localhost WITH PASSWORD '%s';" % (user[:16], password))
                 else:
-                    self.cursor.execute("CREATE USER %s@localhost;"%user[:16])
+                    self.cursor.execute("CREATE USER %s;"%user[:16])
         except Exception, e:
             raise e
 
