@@ -91,7 +91,7 @@ class DbAdministrator(object):
                     self.cursor.execute("CREATE USER '%s'@'localhost';"%user[:16])
             elif self.db_type == 'postgres':
                 if password:
-                    self.cursor.execute("CREATE USER %s@localhost WITH PASSWORD '%s';" % (user[:16], password))
+                    self.cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (user[:16], password))
                 else:
                     self.cursor.execute("CREATE USER %s;"%user[:16])
         except Exception, e:
