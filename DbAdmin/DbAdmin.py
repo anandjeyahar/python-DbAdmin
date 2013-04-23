@@ -17,10 +17,10 @@ class DbAdministrator(object):
         if conn:
             self.conn = conn
         else:
-            self.conn = self.get_conn()
-        self.cursor = self.conn.cursor()
+            self.root_conn = self.get_conn()
+        self.cursor = self.root_conn.cursor()
 
-    def get_conn(self):
+    def get_root_conn(self):
         db_host = raw_input("DB Hostname/IP?")
         db_type = raw_input("DB type(mysql/postgres)?")
         db_root_user = raw_input("DB root user?")
