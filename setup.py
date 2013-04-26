@@ -5,5 +5,5 @@ setup(name='dbadmin',
       author = 'Anand Jeyahar',
       author_email = 'anand.jeyahar@gmail.com',
       url = 'git@github.com:anandjeyahar/python-DbAdmin.git',
-      packages= ['DbAdmin'],
+      packages= ['dbadmin'],
       )
