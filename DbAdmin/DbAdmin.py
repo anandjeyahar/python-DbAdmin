@@ -7,8 +7,8 @@ class DbAdministrator(object):
     """
             Basically, a wrapper for oft-used mysql commands. like show tables,databases, variables etc...
             #TODO:
-        0.  Simplify / create settings for the restore database source folder
-            0a. Merge restore database and extract_sql(from webnotes_server_tools).
+            0.  Simplify / create settings for the restore database source folder
+            0a. Merge extract_sql(from webnotes_server_tools).
             1. Setter and getter for different mysql variables.
             2. Setter and getter for mysql variables at global level??
     """
@@ -91,9 +91,9 @@ class DbAdministrator(object):
                     self.cursor.execute("CREATE USER '%s'@'localhost';"%user[:16])
             elif self.db_type == 'postgres':
                 if password:
-                    self.cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (user[:16], password))
+                    self.cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (user, password))
                 else:
-                    self.cursor.execute("CREATE USER %s;"%user[:16])
+                    self.cursor.execute("CREATE USER %s;"%user)
         except Exception, e:
             raise e
 
@@ -101,7 +101,10 @@ class DbAdministrator(object):
         # delete user if exists
         try:
             print "Dropping user " ,target
-            self.cursor.execute("DROP USER '%s'@'localhost';" % target)
+            if self.db_type == 'mysql':
+                self.cursor.execute("DROP USER '%s'@'localhost';" % target)
+            elif self.db_type == 'postgres':
+                self.cursor.execute("DROP USER %s;"% target)
         except Exception, e:
             if e.args[0]==1396:
                 pass
@@ -111,21 +114,30 @@ class DbAdministrator(object):
     def create_database(self,target):
         try:
             print "Creating Database", target
-            self.cursor.execute("CREATE DATABASE IF NOT EXISTS `%s` ;" % target)
+            if self.db_type == 'mysql':
+                self.cursor.execute("CREATE DATABASE IF NOT EXISTS `%s` ;" % target)
+            elif self.db_type == 'postgres':
+                self.cursor.execute("CREATE DATABASE %s ;"%target)
         except Exception,e:
             raise e
 
     def drop_database(self,target):
         try:
             print "Dropping Database:",target
-            self.cursor.execute("DROP DATABASE IF EXISTS `%s`;"%target)
+            if self.db_type == 'mysql':
+                self.cursor.execute("DROP DATABASE IF EXISTS `%s`;"%target)
+            elif self.db_type == 'postgres':
+                self.cursor.execute("DROP DATABASE %s ;"%target)
         except Exception,e:
             raise e
 
     def grant_all_privileges(self,target,user):
         try:
             print "Granting all privileges on %s to %s@localhost" %(target,user)
-            self.cursor.execute("GRANT ALL PRIVILEGES ON `%s` . * TO '%s'@'localhost';" % (target, user))
+            if self.db_type == 'mysql':
+                self.cursor.execute("GRANT ALL PRIVILEGES ON `%s` . * TO '%s'@'localhost';" % (target, user))
+            elif self.db_type == 'postgres':
+                self.cursor.execute("GRANT ALL ON DATABASE %s TO %s;"%(target,user))
         except Exception,e:
             raise e
 
