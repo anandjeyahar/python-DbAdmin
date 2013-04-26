@@ -8,8 +8,9 @@ though no proper test cases/testing has been done....
 TO INSTALL : 
 Just clone the repo, cd to the directory and run sudo python setup.py install.
 
-Or just use sudo easy_install DbAdmin
+Or just use sudo easy_install dbadmin
 
 Usage:
-from DbAdmin.DbAdmin import DbAdministrator
+
+from DbAdmin import DbAdministrator
 DA = DbAdministrator()

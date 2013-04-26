@@ -1,5 +1,5 @@
 from distutils.core import setup
-setup(name='DbAdmin',
+setup(name='dbadmin',
       version='1.0',
       description = 'just a python wrapper for doing most DB admin functions',
       author = 'Anand Jeyahar',
