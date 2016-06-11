@@ -1,7 +1,8 @@
-## This is part of the wnframework project at google.
-## http://code.google.com/p/wnframework/
-##
-##
+# This is part of the wnframework project at google.
+# http://code.google.com/p/wnframework/
+#
+#
+
 
 class DbAdministrator(object):
     """
@@ -13,16 +14,16 @@ class DbAdministrator(object):
             2. Setter and getter for mysql variables at global level??
     """
 
-    def __init__(self,conn=None):
+    def __init__(self, conn=None):
         if conn:
             self.conn = conn
         else:
             self.root_conn = self.get_conn()
         self.cursor = self.root_conn.cursor()
 
-    def get_root_conn(self,**kwargs):
+    def get_root_conn(self, **kwargs):
         """
-        Pass in a dict of the format 
+        Pass in a dict of the format
             {'db_host':hostname,
                 'db_type':'mysql/postgres',
                 'db_root_user':username,
@@ -36,84 +37,91 @@ class DbAdministrator(object):
         self.db_type = db_type
         if db_type == 'mysql':
             import MySQLdb as mq
-            return mq.Connect(host=db_host,user=db_root_user,password=db_password)
+            return mq.Connect(host=db_host, user=db_root_user, password=db_password)
         elif db_type == 'postgres':
             import psycopg2 as pg
-            return pg.connect("host = %s port = 5432 user=%s password=%s"%(db_host,db_root_user,db_password))
+            return pg.connect("host = %s port = 5432 user=%s password=%s" % (db_host,
+                                                                             db_root_user,
+                                                                             db_password))
 
         return None
 
-    def lock_table(self,table,lock_type):
-        return self.cursor.execute("LOCK TABLES %S %S"%(table,lock_type))
+    def lock_table(self, table, lock_type):
+        return self.cursor.execute("LOCK TABLES %S %S" % (table, lock_type))
 
     def unlock_tables(self):
         """Just stupid unlock tables"""
         return self.cursor.execute("UNLOCK TABLES;")
 
-    def get_variables(self,regex):
+    def get_variables(self, regex):
         """
         Get variables that match the passed pattern regex
         """
-        print ("SHOW VARIABLES LIKE '{0}{1}{2}';".format('%',regex,'%'))
-        self.cursor.execute(("SHOW VARIABLES LIKE '{0}{1}{2}'".format('%',regex,'%')))
+        print("SHOW VARIABLES LIKE '{0}{1}{2}';".format('%', regex, '%'))
+        self.cursor.execute(("SHOW VARIABLES LIKE '{0}{1}{2}'".format('%', regex, '%')))
         return list(self.cursor.fetchall())
 
     def drop_all_databases(self):
         self.db_list = self.get_database_list()
         for db in self.db_list:
-           self.drop_database(db)
+            self.drop_database(db)
 
-    def use(self,db):
+    def use(self, db):
         """Use the given db for all further operations."""
-        self.cursor.execute("USE %s"%db)
+        self.cursor.execute("USE %s" % db)
         self.cursor.fetchall()
 
-    def get_table_schema(self,table):
+    def get_table_schema(self, table):
         """Just returns the output of Desc tables."""
-        self.cursor.execute("DESC %s"%table)
+        self.cursor.execute("DESC %s" % table)
         return list(self.cursor.fetchall())
 
-    def get_tables_list(self,target):
+    def get_tables_list(self, target):
         """ """
         try:
             self.use(target)
-            self.cursor.execute("SHOW TABLES")
+            if self.db_type == 'mysql':
+                self.cursor.execute("SHOW TABLES")
+            elif self.db_type == 'postgres':
+                self.cursor.execute('\d')
+            else:
+                assert None, "Don't know which db_type this is"
             res = self.cursor.fetchall()
             if res:
                 table_list = []
             for table in res:
                 table_list.append(table[0])
             return table_list
-        except Exception,e:
+        except Exception, e:
             raise e
 
-    def create_user(self,user,password):
-        #Create user if it doesn't exist.
+    def create_user(self, user, password):
+        # Create user if it doesn't exist.
         try:
-            print "Creating user %s" %user[:16]
+            print "Creating user %s" % user[:16]
             if self.db_type == 'mysql':
                 if password:
                     self.cursor.execute("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (user[:16], password))
                 else:
-                    self.cursor.execute("CREATE USER '%s'@'localhost';"%user[:16])
+                    self.cursor.execute("CREATE USER '%s'@'localhost';" % user[:16])
             elif self.db_type == 'postgres':
                 if password:
                     self.cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (user, password))
                 else:
-                    self.cursor.execute("CREATE USER %s;"%user)
+                    self.cursor.execute("CREATE USER %s;" % user)
         except Exception, e:
             raise e
 
-    def delete_user(self,target):
+    def delete_user(self, target):
         # delete user if exists
         try:
-            print "Dropping user " ,target
+            print("Dropping user ", target)
             if self.db_type == 'mysql':
                 self.cursor.execute("DROP USER '%s'@'localhost';" % target)
             elif self.db_type == 'postgres':
-                self.cursor.execute("DROP USER %s;"% target)
+                self.cursor.execute("DROP USER %s;" % target)
         except Exception, e:
-            if e.args[0]==1396:
+            if e.args[0] == 1396:
                 pass
             else:
                 raise e
