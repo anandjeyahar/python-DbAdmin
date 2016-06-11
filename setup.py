@@ -4,6 +4,6 @@ setup(name='dbadmin',
       description = 'just a python wrapper for doing most DB admin functions',
       author = 'Anand Jeyahar',
       author_email = 'anand.jeyahar@gmail.com',
-      url = 'git@github.com:anandjeyahar/python-DbAdmin.git',
+      url = 'https://github.com/emofeedback/python-DbAdmin.git',
       packages= ['dbadmin'],
       )
