@@ -46,8 +46,8 @@ class DbAdministrator(object):
                                              user=%s password=%s" % (self.db_host,
                                                                      self.db_root_user,
                                                                      self.db_password))
-        else:
-            assert None, 'Unknown db_type'
+            else:
+                assert None, 'Unknown db_type'
         self.cursor = self.root_conn.cursor()
 
     def lock_table(self, table, lock_type):
@@ -102,13 +102,13 @@ class DbAdministrator(object):
             for table in res:
                 table_list.append(table[0])
             return table_list
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def create_user(self, user, password):
         # Create user if it doesn't exist.
         try:
-            print "Creating user %s" % user[:16]
+            print("Creating user %s" % user[:16])
             if self.db_type == 'mysql':
                 if password:
                     self.cursor.execute("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';" % (user[:16], password))
@@ -119,7 +119,7 @@ class DbAdministrator(object):
                     self.cursor.execute("CREATE USER %s WITH PASSWORD '%s';" % (user, password))
                 else:
                     self.cursor.execute("CREATE USER %s;" % user)
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def delete_user(self, target):
@@ -130,7 +130,7 @@ class DbAdministrator(object):
                 self.cursor.execute("DROP USER '%s'@'localhost';" % target)
             elif self.db_type == 'postgres':
                 self.cursor.execute("DROP USER %s;" % target)
-        except Exception, e:
+        except Exception as e:
             if e.args[0] == 1396:
                 pass
             else:
@@ -138,63 +138,63 @@ class DbAdministrator(object):
 
     def create_database(self, target):
         try:
-            print "Creating Database", target
+            print("Creating Database", target)
             if self.db_type == 'mysql':
                 self.cursor.execute("CREATE DATABASE IF NOT EXISTS `%s` ;" % target)
             elif self.db_type == 'postgres':
                 self.cursor.execute("CREATE DATABASE %s ;" % target)
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def drop_database(self, target):
         try:
-            print "Dropping Database:", target
+            print("Dropping Database:", target)
             if self.db_type == 'mysql':
                 self.cursor.execute("DROP DATABASE IF EXISTS `%s`;" % target)
             elif self.db_type == 'postgres':
                 self.cursor.execute("DROP DATABASE %s ;" % target)
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def grant_all_privileges(self, target, user):
         try:
-            print "Granting all privileges on %s to %s@localhost" % (target, user)
+            print("Granting all privileges on %s to %s@localhost" % (target, user))
             if self.db_type == 'mysql':
                 self.cursor.execute("GRANT ALL PRIVILEGES ON \
                                     `%s` . * TO '%s'@'localhost';" % (target, user))
             elif self.db_type == 'postgres':
                 self.cursor.execute("GRANT ALL ON DATABASE %s TO %s;" % (target, user))
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def grant_select_privilges(self, db, table, user):
         try:
             if table:
-                print "Granting Read privileges on %s.%s to %s@localhost" % (db, table, user)
+                print("Granting Read privileges on %s.%s to %s@localhost" % (db, table, user))
                 self.cursor.execute("GRANT SELECT ON %s.%s to '%s'@'localhost';" % (db, table, user))
             else:
-                print "Granting Read privileges on %s.* to %s@localhost" % (db, user)
+                print("Granting Read privileges on %s.* to %s@localhost" % (db, user))
                 self.cursor.execute("GRANT SELECT ON %s.* to '%s'@'localhost';" % (db, user))
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def grant_privileges(self, privilege, db, table, user, host):
         try:
-            print "Granting %s privilege on %s.%s to %s@%s" % (privilege,
+            print("Granting %s privilege on %s.%s to %s@%s" % (privilege,
                                                                db, table,
-                                                               user, host)
+                                                               user, host))
             if self.db_type == 'mysql':
                 self.cursor.execute("GRANT %s ON %s.%s to '%s'@'%s';" % (privilege,
                                                                          db, table,
                                                                          user, host))
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def flush_privileges(self):
         try:
-            print "Flushing privileges"
+            print("Flushing privileges")
             self.cursor.execute("FLUSH PRIVILEGES")
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def get_database_list(self):
@@ -205,35 +205,35 @@ class DbAdministrator(object):
                 if db[0] not in ['information_schema', 'mysql', 'test', 'accounts']:
                     db_list.append(db[0])
             return db_list
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def restore_database(self,target,source,root_password):
         try:
-            ret = os.system("mysql -u root -p%s %s < %s"%(root_password,target,source))
-            print "Restore DB Return status:",ret
-        except Exception,e:
+            ret = os.system("mysql -u root -p%s %s < %s"%(root_password, target, source))
+            print("Restore DB Return status:", ret)
+        except Exception as e:
             raise e
 
     def create_table(self,table_query):
         try:
             self.cursor.execute(table_query)
-        except Exception,e:
+        except Exception as e:
             raise e
 
     def drop_table(self,table_name):
         try:
-            print "Dropping table %s" %(table_name)
+            print("Dropping table %s" % (table_name))
             self.cursor.execute("DROP TABLE IF EXISTS %s "%(table_name))
-        except Exception,e:
+        except Exception as e:
             raise e
 
     def set_transaction_isolation_level(self,scope='SESSION',level='READ COMMITTED'):
         #Sets the transaction isolation level. scope = global/session
         try:
             self.cursor.execute("SET %s TRANSACTION ISOLATION LEVEL %s"%(scope,level))
-            print "Set transaction level ",scope, level
-        except Exception,e:
+            print("Set transaction level ",scope, level)
+        except Exception as e:
             raise e
 
 
